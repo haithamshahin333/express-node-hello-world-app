@@ -1,3 +1,3 @@
-# hello-world-api
+# Express Node Hello World App
 
-This app is a basic node hello-world app. This branch acts as the main repository for the source-code, while the manifest-repo branch acts as the manifest repo for all resources needed to deploy this app to a kubernetes cluster.
+This app is a basic hello-world-app. Make an update to index.js with the `MESSAGE` variable and run the app locally with `node index.js` or with docker.
