@@ -12,8 +12,8 @@ on:
 
 env:
   IMAGE_NAME: hello-world-app
+  MANIFEST_BRANCH : main
   APP_MANIFEST_PATH: app-manifests
-  MANIFEST_BRANCH : manifest-repo
 
 jobs:
   build:
@@ -36,26 +36,33 @@ jobs:
           docker build . -t ${{ secrets.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ secrets.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
   
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: build
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
 
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       name: checkout manifest branch
-  #       with:
-  #         ref: ${{ env.MANIFEST_BRANCH }}
+    steps:
+      - uses: actions/checkout@v2
+        name: checkout manifest branch
+        with:
+          repository: ${{ secrets.REPO_MANIFEST_NAME }}
+          ref: ${{ env.MANIFEST_BRANCH }}
+          token: ${{ secrets.PAT_GITHUB_TOKEN }}
 
-  #     - name: Kustomize edit image
-  #       run: |
-  #         cd ${{ env.APP_MANIFEST_PATH }}
-  #         kustomize edit set image hello-world=${{ secrets.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
-  #         cat kustomization.yaml
+      - name: Kustomize edit image
+        run: |
+          cd ${{ env.APP_MANIFEST_PATH }}
+          kustomize edit set image hello-world=${{ secrets.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cat kustomization.yaml
 
-  #     - name: Commit kustomization.yaml
-  #       run: |
-  #         git config user.name github-actions
-  #         git config user.email github-actions@github.com
-  #         git add .
-  #         git commit -m "github actions workflow - updating image tag to ${{ github.sha }}"
-  #         git push origin ${{ env.MANIFEST_BRANCH }}
+      - name: Commit kustomization.yaml
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          if [[`git status --porcelain `]]; then
+            echo "committing changes to manifest repo"
+            git add .
+            git commit -m "github actions workflow - updating image tag to ${{ github.sha }}"
+            git push origin ${{ env.MANIFEST_BRANCH }}
+          else
+            echo "no changes to commit"
+          fi
