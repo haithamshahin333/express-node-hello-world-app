@@ -58,7 +58,7 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          if [[`git status --porcelain `]]; then
+          if [ -n "$(git status --porcelain)" ]; then
             echo "committing changes to manifest repo"
             git add .
             git commit -m "github actions workflow - updating image tag to ${{ github.sha }}"
