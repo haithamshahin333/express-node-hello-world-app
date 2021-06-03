@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express();
 
-const MESSAGE = "Hello World";
+const MESSAGE = "Hello World from App Services";
 const PORT = 8080;
 
 app.get('/', (req,res) => {
